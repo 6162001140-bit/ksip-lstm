@@ -86,18 +86,26 @@ if uploaded_file:
     daily_range = pd.date_range(start=last_date + pd.Timedelta(days=1), periods=31)
     interp_series = pd.Series([data_daily['HARGA'].iloc[-1]] + list(forecast), index=[last_date] + forecast_dates)
     daily_forecast = interp_series.reindex(interp_series.index.union(daily_range)).interpolate('time').loc[daily_range]
-
-    st.subheader("📅 Forecast Harga Harian (Interpolasi Linear)")
+    
+    # DataFrame untuk tabel
+    daily_df = pd.DataFrame({"Tanggal": daily_range, "Forecast Harian": daily_forecast.values})
     daily_df_rupiah = daily_df.copy()
     daily_df_rupiah["Forecast Harian"] = daily_df_rupiah["Forecast Harian"].apply(lambda x: f"Rp {x:,.0f}".replace(",", "."))
     
-    # Plot gabungan
-    st.subheader("📉 Visualisasi Harga")
+    # Tampilkan tabel forecast harian (format Rp)
+    st.subheader("📅 Forecast Harga Harian (Interpolasi Linear)")
     st.dataframe(daily_df_rupiah.set_index("Tanggal"))
+    
+    #===================== VISUALIASI =================================
+    st.subheader("📉 Visualisasi Harga Aktual dan Prediksi Harian")
+    
+    # Gabungkan aktual dan prediksi harian (angka asli, bukan format Rp)
     combined_df2 = pd.concat([
-    pd.DataFrame({"Harga Aktual": data_daily["HARGA"]}),
-    pd.DataFrame({"Forecast Harian": daily_forecast})], axis=1)
-
+        pd.DataFrame({"Harga Aktual": data_daily["HARGA"]}),
+        pd.DataFrame({"Forecast Harian": daily_forecast})
+    ], axis=1)
+    
+    # Tampilkan grafik
     st.line_chart(combined_df2)
 
 
