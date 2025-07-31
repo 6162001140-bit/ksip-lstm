@@ -88,11 +88,12 @@ if uploaded_file:
     daily_forecast = interp_series.reindex(interp_series.index.union(daily_range)).interpolate('time').loc[daily_range]
 
     st.subheader("📅 Forecast Harga Harian (Interpolasi Linear)")
-    daily_df = pd.DataFrame({"Tanggal": daily_range, "Forecast Harian": daily_forecast.values})
-    st.dataframe(daily_df.set_index("Tanggal"))
-
+    daily_df_rupiah = daily_df.copy()
+    daily_df_rupiah["Forecast Harian"] = daily_df_rupiah["Forecast Harian"].apply(lambda x: f"Rp {x:,.0f}".replace(",", "."))
+    
     # Plot gabungan
     st.subheader("📉 Visualisasi Harga")
+    st.dataframe(daily_df_rupiah.set_index("Tanggal"))
     combined_df2 = pd.concat([
     pd.DataFrame({"Harga Aktual": data_daily["HARGA"]}),
     pd.DataFrame({"Forecast Harian": daily_forecast})], axis=1)
