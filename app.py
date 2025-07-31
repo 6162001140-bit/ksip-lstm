@@ -75,22 +75,25 @@ if uploaded_file:
 
     st.subheader("📊 Forecast Harga (Mingguan)")
     st.dataframe(forecast_df_display.set_index("Tanggal"))
-    # Gabungkan data aktual dan prediksi
-    plot_df = pd.concat([data_weekly.rename(columns={"HARGA": "Harga Aktual"}), 
-                         forecast_df.set_index("Tanggal").rename(columns={"Harga Prediksi (Mingguan)": "Harga Prediksi"})], axis=0)
-    
-    # Plot dengan matplotlib
-    fig, ax = plt.subplots(figsize=(10, 5))
-    plot_df["Harga Aktual"].plot(ax=ax, label="Harga Aktual", color="blue", linewidth=2)
-    plot_df["Harga Prediksi"].plot(ax=ax, label="Harga Prediksi", color="red", linestyle="--", linewidth=2)
-    ax.set_ylabel("Harga (Rp)")
-    ax.set_title("Harga Aktual dan Prediksi")
-    ax.legend()
-    ax.grid(True)
-    
-    # Format angka jadi Rupiah di Y-axis
-    import matplotlib.ticker as ticker
-    ax.yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, _: f'Rp {int(x):,}'))
-    
-    st.pyplot(fig)
+    st.line_chart(pd.concat([data_weekly, forecast_df.set_index("Tanggal")], axis=0))
+
+    # ==================== Interpolasi Harian =======================
+    data_daily = df[['TANGGAL', 'HARGA']].set_index('TANGGAL')
+    last_date = data_daily.index[-1]
+    daily_range = pd.date_range(start=last_date + pd.Timedelta(days=1), periods=31)
+    interp_series = pd.Series([data_daily['HARGA'].iloc[-1]] + list(forecast), index=[last_date] + forecast_dates)
+    daily_forecast = interp_series.reindex(interp_series.index.union(daily_range)).interpolate('time').loc[daily_range]
+
+    st.subheader("📅 Forecast Harga Harian (Interpolasi Linear)")
+    daily_df = pd.DataFrame({"Tanggal": daily_range, "Forecast Harian": daily_forecast.values})
+    st.dataframe(daily_df.set_index("Tanggal"))
+
+    # Plot gabungan
+    st.subheader("📉 Visualisasi Harga")
+    combined_df2 = pd.concat([
+    pd.DataFrame({"Harga Aktual": data_daily["HARGA"]}),
+    pd.DataFrame({"Forecast Harian": daily_forecast})], axis=1)
+
+    st.line_chart(combined_df2)
+
 
