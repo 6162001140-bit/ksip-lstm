@@ -68,7 +68,29 @@ if uploaded_file:
 
     forecast_dates = [data_weekly.index[-1] + pd.Timedelta(weeks=i) for i in range(1, 5)]
     forecast_df = pd.DataFrame({"Tanggal": forecast_dates, "Harga Prediksi (Mingguan)": forecast})
+    forecast_df_display = forecast_df.copy()
+    forecast_df_display["Harga Prediksi (Mingguan)"] = forecast_df_display["Harga Prediksi (Mingguan)"].apply(lambda x: f"Rp {x:,.0f}")
+    
+
 
     st.subheader("📊 Forecast Harga (Mingguan)")
-    st.dataframe(forecast_df.set_index("Tanggal"))
-    st.line_chart(pd.concat([data_weekly, forecast_df.set_index("Tanggal")], axis=0))
+    st.dataframe(forecast_df_display.set_index("Tanggal"))
+    # Gabungkan data aktual dan prediksi
+    plot_df = pd.concat([data_weekly.rename(columns={"HARGA": "Harga Aktual"}), 
+                         forecast_df.set_index("Tanggal").rename(columns={"Harga Prediksi (Mingguan)": "Harga Prediksi"})], axis=0)
+    
+    # Plot dengan matplotlib
+    fig, ax = plt.subplots(figsize=(10, 5))
+    plot_df["Harga Aktual"].plot(ax=ax, label="Harga Aktual", color="blue", linewidth=2)
+    plot_df["Harga Prediksi"].plot(ax=ax, label="Harga Prediksi", color="red", linestyle="--", linewidth=2)
+    ax.set_ylabel("Harga (Rp)")
+    ax.set_title("Harga Aktual dan Prediksi")
+    ax.legend()
+    ax.grid(True)
+    
+    # Format angka jadi Rupiah di Y-axis
+    import matplotlib.ticker as ticker
+    ax.yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, _: f'Rp {int(x):,}'))
+    
+    st.pyplot(fig)
+
