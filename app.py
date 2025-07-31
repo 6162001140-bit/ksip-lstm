@@ -25,11 +25,11 @@ if uploaded_file:
     data = df[['TANGGAL', 'HARGA']].set_index('TANGGAL')
     data_weekly = data['HARGA'].resample('W').mean().dropna().to_frame()
     
-    # 🟢 Tampilkan data aktual mingguan
-    st.subheader("📅 Data Harga Aktual (Mingguan)")
-    st.dataframe(data_weekly.tail(10))
-    st.line_chart(data_weekly)
-    
+    st.subheader("📄 Data Harga Aktual Kamu")
+    st.dataframe(data)
+    st.line_chart(data)
+
+
     # ========================== MODELING ==========================
     # Scaling
     scaler = MinMaxScaler()
