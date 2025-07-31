@@ -30,7 +30,7 @@ if uploaded_file:
     data_formatted["HARGA"] = data_formatted["HARGA"].apply(lambda x: f"Rp {x:,.0f}".replace(",", "."))
     
     st.dataframe(data_formatted)
-    st.line_chart(data_formatted)
+    st.line_chart(data)
 
 
     # ========================== MODELING ==========================
