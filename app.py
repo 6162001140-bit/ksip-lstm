@@ -26,8 +26,11 @@ if uploaded_file:
     data_weekly = data['HARGA'].resample('W').mean().dropna().to_frame()
     
     st.subheader("📄 Data Harga Aktual Kamu")
-    st.dataframe(data)
-    st.line_chart(data)
+    data_formatted = data.copy()
+    data_formatted["HARGA"] = data_formatted["HARGA"].apply(lambda x: f"Rp {x:,.0f}".replace(",", "."))
+    
+    st.dataframe(data_formatted)
+    st.line_chart(data_formatted)
 
 
     # ========================== MODELING ==========================
